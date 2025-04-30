@@ -22,7 +22,7 @@ def get_args():
     parser.add_argument(
         "--model",
         type=str,
-        default="bert-base-uncased",
+        default="google-bert/bert-base-multilingual-cased",
         choices=["microsoft/mdeberta-v3-base",
                  "FacebookAI/xlm-roberta-base",
                  "distilbert/distilbert-base-multilingual-cased",
