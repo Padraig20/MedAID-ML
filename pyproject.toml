@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "accelerate>=1.6.0",
     "wandb",
     "torch",
     "numpy",
@@ -16,7 +17,7 @@ dependencies = [
     "datasets",
     "pandas",
     "tqdm",
-    "nltk"
+    "nltk",
 ]
 
 [project.scripts]
