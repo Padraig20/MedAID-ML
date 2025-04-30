@@ -1,0 +1,18 @@
+[project]
+name = "medaidml"
+version = "0.1.0"
+description = "Experiments for MedAID-ML."
+readme = "README.md"
+authors = [
+    { name = "Patrick Styll", email = "patrick.styll@tuwien.ac.at" }
+]
+requires-python = ">=3.13"
+dependencies = [
+]
+
+[project.scripts]
+medaidml = "medaidml:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
