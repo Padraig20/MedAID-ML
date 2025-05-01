@@ -18,6 +18,7 @@ dependencies = [
     "pandas",
     "tqdm",
     "nltk",
+    "cmake==3.27",
     "sentencepiece",
 ]
 

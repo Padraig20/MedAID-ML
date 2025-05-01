@@ -5,7 +5,6 @@ import torch
 import argparse
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from transformers import DebertaV2Tokenizer, DebertaV2Model
 from transformers import TrainingArguments, Trainer, IntervalStrategy
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.metrics import classification_report, f1_score
@@ -177,12 +176,8 @@ if __name__ == "__main__":
         final_dataset['test'] = final_dataset['test'].shuffle(seed=SEED).select(range(20))
         final_dataset['no_dataleak_test'] = final_dataset['no_dataleak_test'].shuffle(seed=SEED).select(range(20))
     
-    if MODEL == "microsoft/mdeberta-v3-base":
-        tokenizer = DebertaV2Tokenizer.from_pretrained(MODEL)
-        model = DebertaV2Model.from_pretrained(MODEL, num_labels=len(LABEL_TO_ID)).to(DEVICE)
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(MODEL)
-        model = AutoModelForSequenceClassification.from_pretrained(MODEL, num_labels=len(LABEL_TO_ID)).to(DEVICE)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL, num_labels=len(LABEL_TO_ID)).to(DEVICE)
 
     encoded_data = final_dataset.map(tokenize, batched=True)
 
