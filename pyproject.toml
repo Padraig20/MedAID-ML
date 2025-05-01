@@ -18,6 +18,7 @@ dependencies = [
     "pandas",
     "tqdm",
     "nltk",
+    "tiktoken"
 ]
 
 [project.scripts]
