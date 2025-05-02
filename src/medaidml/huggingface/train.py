@@ -25,7 +25,7 @@ def get_args():
         default="google-bert/bert-base-multilingual-cased",
         choices=["microsoft/mdeberta-v3-base",
                  "FacebookAI/xlm-roberta-base",
-                 "distilbert/distilbert-base-multilingual-cased",
+                 "HiTZ/Medical-mT5-large",
                  "google-bert/bert-base-multilingual-cased"],
         help="Pre-trained model name or path to local checkpoint."
     )
