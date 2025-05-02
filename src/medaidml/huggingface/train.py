@@ -25,7 +25,7 @@ def get_args():
         default="google-bert/bert-base-multilingual-cased",
         choices=["microsoft/mdeberta-v3-base",
                  "FacebookAI/xlm-roberta-base",
-                 "HiTZ/Medical-mT5-large",
+                 "openai-community/gpt2",
                  "google-bert/bert-base-multilingual-cased"],
         help="Pre-trained model name or path to local checkpoint."
     )
@@ -97,12 +97,18 @@ def compute_metrics(pred: dict) -> dict:
     }
 
 def tokenize(examples: dict) -> dict:
-    return tokenizer(examples["text"], padding="max_length", max_length=MAX_LENGTH, truncation=True)
+    if "gpt2" in MODEL:
+        return tokenizer(examples["text"], max_length=MAX_LENGTH, truncation=True)
+    else:
+        return tokenizer(examples["text"], max_length=MAX_LENGTH, truncation=True, padding="max_length")
 
 def get_prediction(model: AutoModelForSequenceClassification,
                    tokenizer: AutoTokenizer,
                    text: str) -> int:
-    inputs = tokenizer(text, padding="max_length", max_length=MAX_LENGTH, truncation= True, return_tensors="pt").to(DEVICE)
+    if "gpt2" in MODEL:
+        inputs = tokenizer(text, max_length=MAX_LENGTH, truncation=True, return_tensors="pt").to(DEVICE)
+    else:
+        inputs = tokenizer(text, max_length=MAX_LENGTH, truncation=True, padding="max_length", return_tensors="pt").to(DEVICE)
     pred = model(**inputs).logits
     probs = pred.softmax(1)
     return probs.argmax().item()
