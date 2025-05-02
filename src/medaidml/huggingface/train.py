@@ -3,13 +3,11 @@ import wandb
 import time
 import torch
 import argparse
-import numpy as np
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer, IntervalStrategy
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 from sklearn.metrics import classification_report, f1_score
 from datasets import Dataset
-from typing import Tuple
 
 from medaidml.utils import split_val_test, json_to_dataframe, \
     get_necessary_columns, convert_to_huggingface_dataset, \
@@ -147,6 +145,10 @@ if __name__ == "__main__":
     SEED = args.seed
     DEVELOPMENT = args.development
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    if "gpt2" in MODEL:
+        print("Warning: Using GPT-2 model, setting batch size to 1.")
+        BATCH_SIZE = 1
     
     train_data = json_to_dataframe(DATA_TRAIN_JSON)
     no_dataleak_test_df = json_to_dataframe(DATA_TEST_JSON)
