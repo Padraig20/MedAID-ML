@@ -109,11 +109,12 @@ def load_data(seed: int = 1, development: bool = False) -> Tuple[pd.DataFrame, p
     test_df = get_necessary_columns(test_df)
     return test_df, no_dataleak_df
 
-def predict_for_dataset(detector, dataset):
+def predict_for_dataset(detector, dataset: pd.DataFrame) -> pd.DataFrame:
     # get the text from the dataset
     # compute the probability for each text
     result = pd.DataFrame()
-    for data in tqdm(dataset, desc="Predicting", total=len(dataset), unit="text"):
+    for _, data in tqdm(dataset.iterrows(), desc="Predicting", total=len(dataset), unit="text"):
+        text = data['text']
         prob, _, _ = detector.compute_prob(data['text'])
         result = pd.concat([result, pd.DataFrame({'Ground Truth': data['target'],
                                                   'Prediction': prob > 0.5,
@@ -128,11 +129,11 @@ def run(args):
     print('')
     for i in range(5):
         print(f'Running Inference on split {i + 1}...')
-        _, test_df, no_dataleak_df = load_data(seed=i, development=True)
+        test_df, no_dataleak_df = load_data(seed=i+1, development=True)
         test_result = predict_for_dataset(detector, test_df)
         no_dataleak_result = predict_for_dataset(detector, no_dataleak_df)
         # save the result
-        resulting_dir = os.path.join(RESULTS_DIR, "fast_detect_gpt", str(i))
+        resulting_dir = os.path.join(RESULTS_DIR, "fast_detect_gpt", str(i+1))
         test_result.to_csv(os.path.join(resulting_dir, "results_test.csv"), index=False)
         no_dataleak_result.to_csv(os.path.join(resulting_dir, "results_no_dataleak.csv"), index=False)    
     
