@@ -114,12 +114,11 @@ def predict_for_dataset(detector, dataset: pd.DataFrame) -> pd.DataFrame:
     # compute the probability for each text
     result = pd.DataFrame()
     for _, data in tqdm(dataset.iterrows(), desc="Predicting", total=len(dataset), unit="text"):
-        text = data['text']
         prob, _, _ = detector.compute_prob(data['text'])
-        result = pd.concat([result, pd.DataFrame({'Ground Truth': data['target'],
-                                                  'Prediction': prob > 0.5,
-                                                  'language': data['language'],
-                                                  'source': data['source']})], ignore_index=True)
+        result = pd.concat([result, pd.DataFrame([{'Ground Truth': data['target'],
+                                                   'Prediction': int(prob > 0.5),
+                                                   'language': data['language'],
+                                                   'source': data['source']}])], ignore_index=True)
     return result
 
 def run(args):
@@ -129,13 +128,15 @@ def run(args):
     print('')
     for i in range(5):
         print(f'Running Inference on split {i + 1}...')
-        test_df, no_dataleak_df = load_data(seed=i+1, development=True)
+        test_df, no_dataleak_df = load_data(seed=i+1, development=False)
         test_result = predict_for_dataset(detector, test_df)
         no_dataleak_result = predict_for_dataset(detector, no_dataleak_df)
         # save the result
         resulting_dir = os.path.join(RESULTS_DIR, "fast_detect_gpt", str(i+1))
+        os.makedirs(resulting_dir, exist_ok=True)
         test_result.to_csv(os.path.join(resulting_dir, "results_test.csv"), index=False)
-        no_dataleak_result.to_csv(os.path.join(resulting_dir, "results_no_dataleak.csv"), index=False)    
+        no_dataleak_result.to_csv(os.path.join(resulting_dir, "results_no_dataleak.csv"), index=False)
+    print('Inference completed!')   
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
