@@ -15,10 +15,10 @@ def get_args():
         required=True,
         choices=["mdeberta-v3-base",
                  "xlm-roberta-base",
-                 "Medical-mT5-large",
                  "bert-base-multilingual-cased",
                  "baseline",
-                 "gpt2"],
+                 "gpt2",
+                 "fast_detect_gpt",],
         help="Name of the model from with the results were generated."
     )
     return parser.parse_args()
@@ -134,6 +134,15 @@ def print_metrics(metrics: List[Tuple[str, Tuple[float, float, float], Tuple[flo
         print(f"Test Metrics: Accuracy: {test_metrics[0]:.4f}, Precision: {test_metrics[1]:.4f}, F1 Score: {test_metrics[2]:.4f}")
         print(f"No Data Leak Metrics: Accuracy: {no_dataleak_metrics[0]:.4f}, Precision: {no_dataleak_metrics[1]:.4f}, F1 Score: {no_dataleak_metrics[2]:.4f}")
         print("-" * 50)
+    print("Overall Metrics:")
+    print(f"Test Accuracy: {sum(m[1][0] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[1][0] for m in metrics]).std():.4f}")
+    print(f"Test Precision: {sum(m[1][1] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[1][1] for m in metrics]).std():.4f}")
+    print(f"Test Recall: {sum(m[1][2] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[1][2] for m in metrics]).std():.4f}")
+    print(f"Test F1 Score: {sum(m[1][2] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[1][2] for m in metrics]).std():.4f}")
+    print(f"No Data Leak Accuracy: {sum(m[2][0] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[2][0] for m in metrics]).std():.4f}")
+    print(f"No Data Leak Precision: {sum(m[2][1] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[2][1] for m in metrics]).std():.4f}")
+    print(f"No Data Leak Recall: {sum(m[2][2] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[2][2] for m in metrics]).std():.4f}")
+    print(f"No Data Leak F1 Score: {sum(m[2][2] for m in metrics) / len(metrics):.4f}, sd: {pd.Series([m[2][2] for m in metrics]).std():.4f}")
 
 def print_metrics_for_attribute(metrics: List[Tuple[str, str, float]]) -> None:
     for seed, _, metric in metrics:
