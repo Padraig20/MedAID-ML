@@ -4,9 +4,14 @@ import argparse
 from collections import defaultdict
 import numpy as np
 from tqdm import tqdm
+import torch
 
 from medaidml import DATA_TEST_JSON
 from medaidml.utils import json_to_dataframe
+
+# Set device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Integrated Gradients for custom huggingface model")
@@ -25,10 +30,11 @@ def load_model_and_tokenizer(model_name: str):
         print(f"Model '{model_name}' not found online. Loading local model instead.")
         model = AutoModelForSequenceClassification.from_pretrained(f"{model_name}/model")
         tokenizer = AutoTokenizer.from_pretrained(f"{model_name}/tokenizer")
+    model.to(device)
     return model, tokenizer
 
 def compute_attributions(ig, model, tokenizer, text: str):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True).to(device)
     input_ids = inputs["input_ids"]
     attention_mask = inputs["attention_mask"]
     embeddings = model.get_input_embeddings()(input_ids)
@@ -40,20 +46,20 @@ def compute_attributions(ig, model, tokenizer, text: str):
     )
 
     token_attributions = attributions.sum(dim=-1).squeeze(0).detach().cpu().numpy()
-    tokens = tokenizer.convert_ids_to_tokens(input_ids[0])
-    
+    tokens = tokenizer.convert_ids_to_tokens(input_ids[0].cpu())
+
     return tokens, token_attributions
 
 def compute_ngram_attributions(tokens, token_attributions, n=2):
     ngram_attributions = []
     ngram_tokens = []
-    
+
     for i in range(len(tokens) - n + 1):
         ngram = tokens[i:i + n]
         attribution = np.mean(token_attributions[i:i + n])
         ngram_tokens.append(" ".join(ngram))
         ngram_attributions.append(attribution)
-    
+
     return ngram_tokens, ngram_attributions
 
 def custom_forward(embeddings, attention_mask):
@@ -72,7 +78,7 @@ if __name__ == "__main__":
     model.eval()
 
     data = json_to_dataframe(DATA_TEST_JSON)
-    global_token_scores = defaultdict(list) # (token, language) -> list of scores
+    global_token_scores = defaultdict(list)  # (token, language) -> list of scores
 
     if DEVELOPMENT:
         data = data.sample(frac=0.05, random_state=42)
@@ -81,7 +87,7 @@ if __name__ == "__main__":
 
     for _, instance in tqdm(data.iterrows(), desc="Computing attributions", total=len(data), unit="instance"):
         tokens, token_attributions = compute_attributions(ig, model, tokenizer, instance['text'])
-    
+
         if NGRAM > 0:
             ngram_tokens, ngram_attributions = compute_ngram_attributions(tokens, token_attributions, NGRAM)
             for token, score in zip(ngram_tokens, ngram_attributions):
@@ -90,12 +96,11 @@ if __name__ == "__main__":
             for token, score in zip(tokens, token_attributions):
                 global_token_scores[(token, instance['language'])].append(score)
 
-
     with open("token_scores.csv", "w") as f:
         f.write("token,language,score\n")
         for (token, language), scores in global_token_scores.items():
             f.write(f"{token},{language},{np.mean(scores)}\n")
-        
+
     for language in ['en', 'de', 'es', 'fr']:
         print(f"Top {TOP_K} tokens for language: {language}")
         language_token_scores = {

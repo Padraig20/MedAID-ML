@@ -109,7 +109,7 @@ def load_data(seed: int = 1, development: bool = False) -> Tuple[pd.DataFrame, p
     test_df = get_necessary_columns(test_df)
     return test_df, no_dataleak_df
 
-def predict_for_dataset(detector, dataset: pd.DataFrame) -> pd.DataFrame:
+def predict_for_dataset(detector: FastDetectGPT, dataset: pd.DataFrame) -> pd.DataFrame:
     # get the text from the dataset
     # compute the probability for each text
     result = pd.DataFrame()
