@@ -24,7 +24,8 @@ def get_args():
         choices=["microsoft/mdeberta-v3-base",
                  "FacebookAI/xlm-roberta-base",
                  "openai-community/gpt2",
-                 "google-bert/bert-base-multilingual-cased"],
+                 "google-bert/bert-base-multilingual-cased",
+                 "HiTZ/Medical-mT5-large"],
         help="Pre-trained model name or path to local checkpoint."
     )
     parser.add_argument(
@@ -95,7 +96,7 @@ def compute_metrics(pred: dict) -> dict:
     }
 
 def tokenize(examples: dict) -> dict:
-    if "gpt2" in MODEL:
+    if "gpt2" in MODEL or "mT5" in MODEL:
         return tokenizer(examples["text"], max_length=MAX_LENGTH, truncation=True)
     else:
         return tokenizer(examples["text"], max_length=MAX_LENGTH, truncation=True, padding="max_length")
@@ -103,7 +104,7 @@ def tokenize(examples: dict) -> dict:
 def get_prediction(model: AutoModelForSequenceClassification,
                    tokenizer: AutoTokenizer,
                    text: str) -> int:
-    if "gpt2" in MODEL:
+    if "gpt2" in MODEL or "mT5" in MODEL:
         inputs = tokenizer(text, max_length=MAX_LENGTH, truncation=True, return_tensors="pt").to(DEVICE)
     else:
         inputs = tokenizer(text, max_length=MAX_LENGTH, truncation=True, padding="max_length", return_tensors="pt").to(DEVICE)
@@ -146,7 +147,7 @@ if __name__ == "__main__":
     DEVELOPMENT = args.development
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    if "gpt2" in MODEL:
+    if "gpt2" in MODEL or "mT5" in MODEL:
         print("Warning: Using GPT-2 model, setting batch size to 1.")
         BATCH_SIZE = 1
     
