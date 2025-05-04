@@ -10,6 +10,8 @@ from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
+from tqdm import tqdm
+
 from medaidml import RESULTS_DIR
 from medaidml.utils import split_val_test
 
@@ -32,7 +34,7 @@ def get_features(spectrum_data: Union[str, pd.DataFrame],
     labels = []
     languages = []
     sources = []
-    for _, group in df.groupby('sid'):
+    for _, group in tqdm(df.groupby('sid')):
         freqs = group['freq'].values
         features = group['power'].values
         new_freq = np.linspace(0, 0.5, interp_len)
