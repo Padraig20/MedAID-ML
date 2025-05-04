@@ -14,6 +14,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output_dir", type=str, default="output", help="Output directory for results")
     parser.add_argument("--development", action="store_true", help="Use a smaller sample for development")
     parser.add_argument("--top_k", type=int, default=10, help="Number of top tokens to display")
+    parser.add_argument("--ngram", type=int, default=0, help="Use n-gram attribution (0 for none)")
     return parser.parse_args()
 
 def load_model_and_tokenizer(model_name: str):
@@ -43,6 +44,18 @@ def compute_attributions(ig, model, tokenizer, text: str):
     
     return tokens, token_attributions
 
+def compute_ngram_attributions(tokens, token_attributions, n=2):
+    ngram_attributions = []
+    ngram_tokens = []
+    
+    for i in range(len(tokens) - n + 1):
+        ngram = tokens[i:i + n]
+        attribution = np.mean(token_attributions[i:i + n])
+        ngram_tokens.append(" ".join(ngram))
+        ngram_attributions.append(attribution)
+    
+    return ngram_tokens, ngram_attributions
+
 def custom_forward(embeddings, attention_mask):
     outputs = model(inputs_embeds=embeddings, attention_mask=attention_mask)
     return outputs.logits[:, 1]  # explain class 1 (AI)
@@ -53,6 +66,7 @@ if __name__ == "__main__":
     MODEL_NAME = args.model_name
     OUTPUT_DIR = args.output_dir
     TOP_K = args.top_k
+    NGRAM = args.ngram
 
     model, tokenizer = load_model_and_tokenizer(MODEL_NAME)
     model.eval()
@@ -68,8 +82,14 @@ if __name__ == "__main__":
     for _, instance in tqdm(data.iterrows(), desc="Computing attributions", total=len(data), unit="instance"):
         tokens, token_attributions = compute_attributions(ig, model, tokenizer, instance['text'])
     
-        for token, score in zip(tokens, token_attributions):
-            global_token_scores[(token, instance['language'])].append(score)
+        if NGRAM > 0:
+            ngram_tokens, ngram_attributions = compute_ngram_attributions(tokens, token_attributions, NGRAM)
+            for token, score in zip(ngram_tokens, ngram_attributions):
+                global_token_scores[(token, instance['language'])].append(score)
+        else:
+            for token, score in zip(tokens, token_attributions):
+                global_token_scores[(token, instance['language'])].append(score)
+
 
     with open("token_scores.csv", "w") as f:
         f.write("token,language,score\n")
