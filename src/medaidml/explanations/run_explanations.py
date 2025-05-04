@@ -9,7 +9,6 @@ import torch
 from medaidml import DATA_TEST_JSON
 from medaidml.utils import json_to_dataframe
 
-# Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
@@ -99,7 +98,7 @@ if __name__ == "__main__":
     with open("token_scores.csv", "w") as f:
         f.write("token,language,score\n")
         for (token, language), scores in global_token_scores.items():
-            f.write(f"{token},{language},{np.mean(scores)}\n")
+            f.write(f"\"{token}\",{language},{np.mean(scores)}\n")
 
     for language in ['en', 'de', 'es', 'fr']:
         print(f"Top {TOP_K} tokens for language: {language}")
