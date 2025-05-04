@@ -20,7 +20,8 @@ dependencies = [
     "nltk",
     "cmake==3.27",
     "sentencepiece",
-    "captum"
+    "captum",
+    "einops"
 ]
 
 [project.scripts]
