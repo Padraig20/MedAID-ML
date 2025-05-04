@@ -54,10 +54,13 @@ def run_gpt2_model(model: GPT2LMHeadModel,
     log_softmax = nn.LogSoftmax(dim=1)
 
     def collate_fn(batch):
-        texts = [item['text'] for item in batch]
-        labels = [item['target'] for item in batch]
-        languages = [item['language'] for item in batch]
-        sources = [item['source'] for item in batch]
+        try:
+            texts = [item['text'] for item in batch]
+            labels = [item['target'] for item in batch]
+            languages = [item['language'] for item in batch]
+            sources = [item['source'] for item in batch]
+        except KeyError as e:
+            raise KeyError(f"Missing key in dataset: {e}. Ensure all dataset items have 'text', 'target', 'language', and 'source' keys.")
         encoded = tokenizer(texts,
                             padding=True,
                             truncation=True,
@@ -118,9 +121,12 @@ if __name__ == "__main__":
         train_df = train_df.sample(frac=0.01, random_state=42)
         test_df = test_df.sample(frac=0.01, random_state=42)
     
+    train_data = train_df.to_dict(orient='records')
+    test_data = test_df.to_dict(orient='records')
+    
     out_dir = os.path.join(RESULTS_DIR, "fourier_gpt", "likelihood_scores")
     os.makedirs(out_dir, exist_ok=True)
     
     model, tokenizer = load_model(MODEL_PATH, MODEL)
-    run_gpt2_model(model, tokenizer, train_df, os.path.join(out_dir, "nll_train"), BATCH_SIZE, MAX_LENGTH)
-    run_gpt2_model(model, tokenizer, test_df, os.path.join(out_dir, "nll_test"), BATCH_SIZE, MAX_LENGTH)
+    run_gpt2_model(model, tokenizer, train_data, os.path.join(out_dir, "nll_train"), BATCH_SIZE, MAX_LENGTH)
+    run_gpt2_model(model, tokenizer, test_data, os.path.join(out_dir, "nll_test"), BATCH_SIZE, MAX_LENGTH)

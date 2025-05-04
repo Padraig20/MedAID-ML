@@ -77,14 +77,14 @@ if __name__ == "__main__":
     fft_dir = os.path.join(RESULTS_DIR, "fourier_gpt")
     in_dir = os.path.join(fft_dir, "fft_transformed")
     
-    train_file = os.path.join(in_dir, "train.csv")
-    test_file = os.path.join(in_dir, "test.csv")
+    train_file = os.path.join(in_dir, "fft_train.csv")
+    test_file = os.path.join(in_dir, "fft_test.csv")
     
     no_dataleak_df = pd.read_csv(test_file)
     all_train_df = pd.read_csv(train_file)
     
     for i in range(1, 6):
-        train_df, val_df, test_df = split_val_test(all_train_df, no_dataleak_df, seed=i) 
+        train_df, val_df, test_df = split_val_test(all_train_df, seed=i) 
            
         model = fit_svm(train_df)
         results_val = evaluate_svm(val_df, model)

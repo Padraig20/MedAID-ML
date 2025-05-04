@@ -53,7 +53,7 @@ class FFTProcessor(object):
                 d_mean = np.mean(d)
                 d_std = np.std(d)
                 d_norm = (d - d_mean) / (d_std + epsion)
-                data_zs.append((d_norm, t))
+                data_zs.append((d_norm, t, l, s))
             data = data_zs.copy()
         elif self.preprocess == 'minmax':
             data_mm = []
