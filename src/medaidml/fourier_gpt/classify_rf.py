@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.feature_selection import SelectKBest
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 
 from tqdm import tqdm
 
@@ -46,20 +46,20 @@ def get_features(spectrum_data: Union[str, pd.DataFrame],
 
     return np.array(features_interp), np.array(labels), np.array(languages), np.array(sources)
 
-def fit_svm(fft_data: pd.DataFrame) -> Pipeline:
+def fit_rf(fft_data: pd.DataFrame, seed: int) -> Pipeline:
     print("Getting features...")
     x, y, _, _ = get_features(fft_data)
 
     cls = make_pipeline(StandardScaler(),
                         SelectKBest(k=120),
-                        SVC(gamma='auto', kernel='rbf', C=1))
+                        RandomForestClassifier(n_estimators=100, random_state=seed))
     
     print("Fitting pipeline...")
     cls = cls.fit(x, y)
 
     return cls
 
-def evaluate_svm(fft_data: pd.DataFrame, model: Pipeline) -> pd.DataFrame:
+def evaluate_rf(fft_data: pd.DataFrame, model: Pipeline) -> pd.DataFrame:
     print("Getting features...")
     x, y, languages, sources = get_features(fft_data)
 
@@ -88,10 +88,10 @@ if __name__ == "__main__":
     for i in range(1, 6):
         train_df, val_df, test_df = split_val_test(all_train_df, seed=i) 
            
-        model = fit_svm(train_df)
-        results_val = evaluate_svm(val_df, model)
-        results_test = evaluate_svm(test_df, model)
-        results_no_dataleak = evaluate_svm(no_dataleak_df, model)
+        model = fit_rf(train_df, seed=i)
+        results_val = evaluate_rf(val_df, model)
+        results_test = evaluate_rf(test_df, model)
+        results_no_dataleak = evaluate_rf(no_dataleak_df, model)
         
         print(f"Results for seed {i}:")
         print(f"Validation Accuracy: {accuracy_score(results_val['Ground Truth'], results_val['Prediction'])}")
