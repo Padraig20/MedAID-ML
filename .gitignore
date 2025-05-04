@@ -2,3 +2,6 @@ data/
 __pycache__/
 wandb/
 mBERT-detect
+
+results/fourier_gpt/likelihood_scores/
+results/fourier_gpt/fft_transformed/
