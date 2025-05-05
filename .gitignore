@@ -5,3 +5,5 @@ mBERT-detect
 
 results/fourier_gpt/likelihood_scores/
 results/fourier_gpt/fft_transformed/
+
+potential_markers/

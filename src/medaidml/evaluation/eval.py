@@ -18,7 +18,8 @@ def get_args():
                  "bert-base-multilingual-cased",
                  "baseline",
                  "gpt2",
-                 "fast_detect_gpt",],
+                 "fast_detect_gpt",
+                 "Medical-mT5-large"],
         help="Name of the model from with the results were generated."
     )
     return parser.parse_args()
@@ -53,7 +54,23 @@ def plot_boxplot_metrics(metrics: List[Tuple[str, Tuple[float, float, float], Tu
     leakfree_per_metric = list(zip(*leakfree_values))
     
     fig, axes = plt.subplots(3, 2, figsize=(5, 12), sharey='row')
-    fig.suptitle(MODEL, fontsize=22, y=0.99)
+    if MODEL == "baseline":
+        title = "Baseline"
+    elif MODEL == "gpt2":
+        title = "GPT-2"
+    elif MODEL == "fast_detect_gpt":
+        title = "Fast-DetectGPT"
+    elif MODEL == "mdeberta-v3-base":
+        title = "mDeBERTa v3"
+    elif MODEL == "xlm-roberta-base":
+        title = "XLM-RoBERTa"
+    elif MODEL == "bert-base-multilingual-cased":
+        title = "Multilingual BERT"
+    elif MODEL == "Medical-mT5-large":
+        title = "Medical mT5"
+    else:
+        title = MODEL
+    fig.suptitle(title, fontsize=27, y=0.99)
     
     metric_names = ["Accuracy", "Precision", "F1 Score"]
     box_colors = ["#1f77b4", "#ff7f0e"]
@@ -70,14 +87,14 @@ def plot_boxplot_metrics(metrics: List[Tuple[str, Tuple[float, float, float], Tu
         ax_test.boxplot(
             test_per_metric[i],
             patch_artist=True,
-            widths=0.7,
+            widths=0.8,
             boxprops=dict(facecolor=box_colors[0], linewidth=1.5),
             whiskerprops=dict(linewidth=1.5),
             capprops=dict(linewidth=1.5),
             medianprops=dict(color='black', linewidth=1.5),
         )
         if i == 0:
-            ax_test.set_title("Test", fontsize=18)
+            ax_test.set_title("Validation", fontsize=22)
         ax_test.set_ylim(y_min, y_max)
         ax_test.set_ylabel(metric_names[i], fontsize=18)
 
@@ -93,14 +110,14 @@ def plot_boxplot_metrics(metrics: List[Tuple[str, Tuple[float, float, float], Tu
             medianprops=dict(color='black', linewidth=1.5),
         )
         if i == 0:
-            ax_noleak.set_title("No Data Leak", fontsize=18)
+            ax_noleak.set_title("Test", fontsize=22)
             ax_noleak.set_ylim(y_min, y_max)
 
         # Clean look
         for ax in (ax_test, ax_noleak):
-            ax.tick_params(axis='y', labelsize=15)
+            ax.tick_params(axis='y', labelsize=18)
             ax.tick_params(axis='x', bottom=False, labelbottom=False)
-            ax.set_yticklabels([f"{tick:.3f}" for tick in ax.get_yticks()])
+            #ax.set_yticklabels([f"{tick:.3f}" for tick in ax.get_yticks()])
 
     plt.tight_layout()
     plt.show()
@@ -157,11 +174,27 @@ def plot_barchart_metrics_for_language(metrics: List[Tuple[str, List[Tuple[str, 
     std_devs = [pd.Series([m[2] for m in lang_metrics]).std() for _, lang_metrics in metrics]
 
     ax.bar(languages, means, yerr=std_devs, capsize=5, color="#1f77b4", alpha=0.7, error_kw=dict(ecolor='black', elinewidth=1.5, capthick=1.5))
-    ax.set_xlabel("Language", fontsize=20)
-    ax.set_ylabel("Accuracy", fontsize=20)
-    ax.set_title(MODEL, fontsize=22)
-    ax.tick_params(axis='x', labelsize=16)
-    ax.tick_params(axis='y', labelsize=16)
+    ax.set_xlabel("Language", fontsize=22)
+    ax.set_ylabel("Accuracy", fontsize=22)
+    if MODEL == "baseline":
+        title = "Baseline"
+    elif MODEL == "gpt2":
+        title = "GPT-2"
+    elif MODEL == "fast_detect_gpt":
+        title = "Fast-DetectGPT"
+    elif MODEL == "mdeberta-v3-base":
+        title = "mDeBERTa v3"
+    elif MODEL == "xlm-roberta-base":
+        title = "XLM-RoBERTa"
+    elif MODEL == "bert-base-multilingual-cased":
+        title = "BERT Multilingual"
+    elif MODEL == "Medical-mT5-large":
+        title = "Medical mT5"
+    else:
+        title = MODEL
+    ax.set_title(title, fontsize=27)
+    ax.tick_params(axis='x', labelsize=20)
+    ax.tick_params(axis='y', labelsize=20)
     ax.set_ylim(0.5, 0.9)
     plt.tight_layout()
     plt.show()
@@ -173,10 +206,10 @@ def plot_barchart_metrics_for_llm(metrics: List[Tuple[str, str, float]]) -> None
     std_devs = [pd.Series([m[2] for m in llm_metrics]).std() for _, llm_metrics in metrics]
 
     ax.bar(llms, means, yerr=std_devs, capsize=5, color="#ff6347", alpha=0.7, error_kw=dict(ecolor='black', elinewidth=1.5, capthick=1.5))
-    ax.set_xlabel("Source", fontsize=20)
-    ax.set_ylabel("Accuracy", fontsize=20)
-    ax.tick_params(axis='x', labelsize=16)
-    ax.tick_params(axis='y', labelsize=16)
+    ax.set_xlabel("Source", fontsize=22)
+    ax.set_ylabel("Accuracy", fontsize=22)
+    ax.tick_params(axis='x', labelsize=20)
+    ax.tick_params(axis='y', labelsize=20)
     ax.set_ylim(0.2, 1.0)
     plt.tight_layout()
     plt.show()
